@@ -1,8 +1,12 @@
 package com.spring.mybatis.realm;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Resource;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -28,6 +32,8 @@ public class UserRealm extends CasRealm {
 	@Resource
 	private UserService userService;
 
+    private final Log logger = LogFactory.getLog(getClass());
+
 	protected final Map<String, SimpleAuthorizationInfo> roles = new ConcurrentHashMap<String, SimpleAuthorizationInfo>();
 	
 	/**
@@ -37,12 +43,16 @@ public class UserRealm extends CasRealm {
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 
 		String account = (String) principals.getPrimaryPrincipal();
+        logger.debug("获取用户名："+account);
 		SimpleAuthorizationInfo authorizationInfo = null;
 		if (authorizationInfo == null) {
 			authorizationInfo = new SimpleAuthorizationInfo();
-			authorizationInfo.addStringPermissions(roleService.getPermissions(account));
-			authorizationInfo.addRoles(roleService.getRoles(account));
-			roles.put(account, authorizationInfo);
+            List<String> permissions = roleService.getPermissions(account);
+            authorizationInfo.addStringPermissions(permissions);
+            List<String> roles = roleService.getRoles(account);
+            logger.debug("获取roles："+roles+"获取permissions："+permissions);
+            authorizationInfo.addRoles(roles);
+			this.roles.put(account, authorizationInfo);
 		}
 
 		return authorizationInfo;
@@ -56,12 +66,13 @@ public class UserRealm extends CasRealm {
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) {
 
 		AuthenticationInfo authc = super.doGetAuthenticationInfo(token);
+        if(authc!=null){
+            String account = (String) authc.getPrincipals().getPrimaryPrincipal();
 
-		String account = (String) authc.getPrincipals().getPrimaryPrincipal();
-
-		User user = userService.getUserByAccount(account);
-		
-		SecurityUtils.getSubject().getSession().setAttribute("user", user);
+            User user = userService.getUserByAccount(account);
+            logger.debug("获取user设置到会话中："+user.toString());
+            SecurityUtils.getSubject().getSession().setAttribute("user", user);
+        }
 
 		return authc;
 	}

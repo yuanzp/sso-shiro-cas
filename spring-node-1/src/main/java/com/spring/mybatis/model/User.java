@@ -62,4 +62,16 @@ public class User {
     public void setCreated(Date created) {
         this.created = created;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", account='" + account + '\'' +
+                ", password='" + password + '\'' +
+                ", username='" + username + '\'' +
+                ", status='" + status + '\'' +
+                ", created=" + created +
+                '}';
+    }
 }
