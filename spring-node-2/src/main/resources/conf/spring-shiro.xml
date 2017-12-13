@@ -16,22 +16,38 @@
 		<property name="securityManager" ref="securityManager" />
 		<!-- 设定用户的登录链接，这里为cas登录页面的链接地址可配置回调地址 -->
 		<property name="loginUrl" value="${shiro.loginUrl}" />
+        <property name="unauthorizedUrl" value="${shiro.unauthorizedUrl}"/>
 		<property name="filters">
 			<map>
 				<!-- 添加casFilter到shiroFilter -->
 				<entry key="casFilter" value-ref="casFilter" />
 				<entry key="logoutFilter" value-ref="logoutFilter" />
+                <!-- 自定义过滤 -->
+                <entry key="rolePermission" value-ref="rolePermission"/>
 			</map>
 		</property>
-		<property name="filterChainDefinitions">
-			<value>
-				/shiro-cas = casFilter
-				/logout = logoutFilter
-				/users/** = user
-			</value>
-		</property>
+        <!--<property name="filterChainDefinitions">
+            <value>
+                /shiro-cas = casFilter
+                /logout = logoutFilter
+                /users/** = user
+                /tips/** = anon
+                /** = authc
+            </value>
+        </property>-->
+        <property name="filterChainDefinitionMap" ref="shiroFilterChainDefinitions"/>
 	</bean>
-
+    <bean id="shiroFilterChainDefinitions" factory-bean="shiroFilterChainDefinitionsBuilder" factory-method="extendShiroFilterChainDefinitions"></bean>
+    <!-- Shiro权限资源配置拓展 -->
+    <bean id="shiroFilterChainDefinitionsBuilder" class="com.spring.mybatis.shiro.factory.ShiroFilterChainDefinitionsBuilder">
+        <property name="filterChainDefinitions">
+            <value>
+                /shiro-cas = casFilter
+                /logout = logoutFilter
+                /users/** = user
+            </value>
+        </property>
+    </bean>
 	<bean id="casFilter" class="org.apache.shiro.cas.CasFilter">
 		<!-- 配置验证错误时的失败页面 -->
 		<property name="failureUrl" value="${shiro.failureUrl}" />
@@ -61,7 +77,7 @@
 
 	<bean id="casSubjectFactory" class="org.apache.shiro.cas.CasSubjectFactory"></bean>
 
-
+    <bean id="rolePermission" class="com.spring.mybatis.shiro.RolePermissionAuthorizationFilter"></bean>
 
 	<bean
 		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
