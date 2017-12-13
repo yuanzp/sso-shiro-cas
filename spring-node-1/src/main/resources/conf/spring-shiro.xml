@@ -16,6 +16,7 @@
 		<property name="securityManager" ref="securityManager" />
 		<!-- 设定用户的登录链接，这里为cas登录页面的链接地址可配置回调地址 -->
 		<property name="loginUrl" value="${shiro.loginUrl}" />
+        <property name="unauthorizedUrl" value="${shiro.unauthorizedUrl}"/>
 		<property name="filters">
 			<map>
 				<!-- 添加casFilter到shiroFilter -->
